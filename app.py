@@ -478,25 +478,51 @@ def index():
         lang = 'ko'
     session['language'] = lang
     
-    # 임시로 템플릿 렌더링을 우회하고 간단한 HTML 반환
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Big5 성격 테스트</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <h1>🧠 Big5 성격 테스트</h1>
-        <p>성공적으로 배포되었습니다!</p>
-        <p>언어: ''' + ('한국어' if lang == 'ko' else 'English') + '''</p>
-        <p><a href="/debug">디버그 정보 확인</a></p>
-        <p><a href="/health">헬스 체크</a></p>
-        <p>곧 정식 버전으로 업데이트됩니다...</p>
-    </body>
-    </html>
-    '''
+    try:
+        # 원래의 템플릿 렌더링 시도
+        return render_template('index.html', lang=lang)
+    except Exception as e:
+        # 템플릿 렌더링 실패 시 간단한 HTML로 fallback
+        app.logger.error(f'Template rendering failed: {str(e)}')
+        return '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Big5 성격 테스트</title>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+                .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                h1 { color: #333; text-align: center; }
+                .btn { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 5px; text-decoration: none; display: inline-block; margin: 10px; }
+                .btn:hover { background: #0056b3; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🧠 Big5 성격 테스트</h1>
+                <p>과학적으로 검증된 Big5 모델을 기반으로 한 성격 테스트입니다.</p>
+                <p><strong>5가지 핵심 성격 요인을 분석합니다:</strong></p>
+                <ul>
+                    <li><strong>개방성 (Openness)</strong> - 새로운 경험에 대한 개방성</li>
+                    <li><strong>성실성 (Conscientiousness)</strong> - 체계성과 책임감</li>
+                    <li><strong>외향성 (Extraversion)</strong> - 사회적 에너지와 활발함</li>
+                    <li><strong>친화성 (Agreeableness)</strong> - 타인에 대한 배려와 협력</li>
+                    <li><strong>신경성 (Neuroticism)</strong> - 감정적 안정성</li>
+                </ul>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="/test?lang=''' + lang + '''" class="btn">테스트 시작하기</a>
+                    <a href="/debug" class="btn" style="background: #6c757d;">디버그 정보</a>
+                </div>
+                <p style="text-align: center; margin-top: 20px; color: #666;">
+                    언어: ''' + ('한국어' if lang == 'ko' else 'English') + ''' | 
+                    <a href="?lang=ko">한국어</a> | <a href="?lang=en">English</a>
+                </p>
+            </div>
+        </body>
+        </html>
+        '''
 
 @app.route('/set_language/<lang>')
 def set_language(lang):
