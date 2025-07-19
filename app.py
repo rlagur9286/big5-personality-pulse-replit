@@ -1,38 +1,18 @@
 import os
 import logging
 from flask import Flask, render_template, request, session, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime
 import json
+import uuid
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
-
-class Base(DeclarativeBase):
-    pass
-
-db = SQLAlchemy(model_class=Base)
 
 # Create the app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "big5-test-secret-key-2025")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-
-# Configure the database
-database_url = os.environ.get("DATABASE_URL", "sqlite:///big5_test.db")
-# Fix for Vercel compatibility
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
-
-# Initialize the app with the extension
-db.init_app(app)
 
 # Big5 Questions - 10 questions per factor (50 total)
 BIG5_QUESTIONS = {
@@ -484,9 +464,7 @@ def find_anime_character(scores, lang="ko"):
     
     return best_match
 
-with app.app_context():
-    from models import TestResult
-    db.create_all()
+# Database-free version - using sessions only
 
 @app.route('/')
 def index():
@@ -606,26 +584,13 @@ def calculate_results():
         percentile = ((score - 10) / 40) * 100
         percentile_scores[factor] = max(0, min(100, percentile))
     
-    # Save results to database
-    test_result = TestResult(
-        openness=percentile_scores['O'],
-        conscientiousness=percentile_scores['C'],
-        extraversion=percentile_scores['E'],
-        agreeableness=percentile_scores['A'],
-        neuroticism=percentile_scores['N'],
-        test_date=datetime.now()
-    )
-    
-    db.session.add(test_result)
-    db.session.commit()
-    
     # Find matching anime character
     anime_character = find_anime_character(percentile_scores, lang)
     
-    # Store results in session for display
+    # Store results in session (no database)
     session['results'] = percentile_scores
-    session['result_id'] = test_result.id
     session['anime_character'] = anime_character
+    session['test_completed'] = datetime.now().isoformat()
     
     return redirect(url_for('results'))
 
@@ -660,12 +625,8 @@ def results():
     # Current date for display
     current_date = datetime.now().strftime('%Y년 %m월 %d일' if lang == 'ko' else '%B %d, %Y')
     
-    # Get share URL if result_id exists
+    # No sharing feature in database-free version
     share_url = None
-    if 'result_id' in session:
-        result = TestResult.query.get(session['result_id'])
-        if result and result.share_token:
-            share_url = url_for('shared_results', token=result.share_token, _external=True)
     
     return render_template('results.html', 
                          insights=insights, 
@@ -675,65 +636,7 @@ def results():
                          current_date=current_date,
                          share_url=share_url)
 
-@app.route('/shared/<token>')
-def shared_results(token):
-    # Find result by share token
-    result = TestResult.query.filter_by(share_token=token).first()
-    if not result:
-        return render_template('404.html'), 404
-    
-    lang = request.args.get('lang', 'ko')
-    if lang not in ['ko', 'en']:
-        lang = 'ko'
-    
-    # Convert scores back to dictionary format
-    scores = {
-        'O': result.openness,
-        'C': result.conscientiousness, 
-        'E': result.extraversion,
-        'A': result.agreeableness,
-        'N': result.neuroticism
-    }
-    
-    factor_descriptions = FACTOR_DESCRIPTIONS[lang]
-    
-    # Find matching anime character for shared results
-    anime_character = find_anime_character(scores, lang)
-    
-    # Define colors for each factor
-    factor_colors = {
-        'O': '#6366f1',  # Indigo for Openness
-        'C': '#10b981',  # Emerald for Conscientiousness  
-        'E': '#f59e0b',  # Amber for Extraversion
-        'A': '#ef4444',  # Red for Agreeableness
-        'N': '#8b5cf6'   # Violet for Neuroticism
-    }
-    
-    # Generate personality insights
-    insights = {}
-    for factor, score in scores.items():
-        factor_info = factor_descriptions[factor].copy()
-        factor_info['score'] = score
-        factor_info['level'] = 'high' if score >= 60 else 'low' if score <= 40 else 'medium'
-        factor_info['color'] = factor_colors[factor]
-        insights[factor] = factor_info
-    
-    # Format test date
-    test_date = result.test_date.strftime('%Y년 %m월 %d일' if lang == 'ko' else '%B %d, %Y')
-    
-    return render_template('shared_results.html', 
-                         insights=insights, 
-                         scores=scores,
-                         anime_character=anime_character,
-                         lang=lang,
-                         test_date=test_date,
-                         is_shared=True)
-
-@app.route('/previous_results')
-def previous_results():
-    lang = session.get('language', 'ko')
-    results = TestResult.query.order_by(TestResult.test_date.desc()).limit(10).all()
-    return render_template('previous_results.html', results=results, lang=lang)
+# Database-free version - sharing and history features removed
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

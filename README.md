@@ -94,4 +94,4 @@ python main.py
 
 ---
 
-Made with ❤️ in Korea# Updated for Vercel deployment
+Made with ❤️ in Korea
