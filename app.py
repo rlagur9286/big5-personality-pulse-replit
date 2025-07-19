@@ -9,8 +9,13 @@ import uuid
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Create the app
-app = Flask(__name__)
+# Get the directory of this file
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+# Create the app with explicit template and static folder paths
+app = Flask(__name__, 
+            template_folder=os.path.join(basedir, 'templates'),
+            static_folder=os.path.join(basedir, 'static'))
 app.secret_key = os.environ.get("SESSION_SECRET", "big5-test-secret-key-2025")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
@@ -636,7 +641,21 @@ def results():
                          current_date=current_date,
                          share_url=share_url)
 
-# Database-free version - sharing and history features removed
+# Error handlers for debugging
+@app.errorhandler(500)
+def internal_server_error(error):
+    app.logger.error(f'Server Error: {error}')
+    return f'Internal Server Error: {str(error)}', 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    app.logger.error(f'Not Found: {error}')
+    return f'Not Found: {str(error)}', 404
+
+# Health check endpoint
+@app.route('/health')
+def health_check():
+    return {'status': 'ok', 'message': 'Flask app is running'}, 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
