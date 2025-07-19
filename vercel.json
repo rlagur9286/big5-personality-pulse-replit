@@ -5,8 +5,12 @@
       "dest": "/static/$1"
     },
     {
+      "src": "/test",
+      "dest": "/api/test.py"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api/main.py"
+      "dest": "/api/test.py"
     }
   ]
 }
