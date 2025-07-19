@@ -477,7 +477,26 @@ def index():
     if lang not in ['ko', 'en']:
         lang = 'ko'
     session['language'] = lang
-    return render_template('index.html', lang=lang)
+    
+    # 임시로 템플릿 렌더링을 우회하고 간단한 HTML 반환
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Big5 성격 테스트</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>🧠 Big5 성격 테스트</h1>
+        <p>성공적으로 배포되었습니다!</p>
+        <p>언어: ''' + ('한국어' if lang == 'ko' else 'English') + '''</p>
+        <p><a href="/debug">디버그 정보 확인</a></p>
+        <p><a href="/health">헬스 체크</a></p>
+        <p>곧 정식 버전으로 업데이트됩니다...</p>
+    </body>
+    </html>
+    '''
 
 @app.route('/set_language/<lang>')
 def set_language(lang):
