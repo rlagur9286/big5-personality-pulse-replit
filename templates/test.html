@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}{% if lang == 'en' %}Big5 Personality Test - Question {{ current }}/{{ total }}{% else %}Big5 성격 테스트 - 질문 {{ current }}/{{ total }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="test-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Progress Bar -->
+                <div class="progress-container mb-4">
+                    <div class="progress-info">
+                        <span class="progress-text">{% if lang == 'en' %}Answered{% else %}답변 완료{% endif %}</span>
+                        <span class="progress-numbers">{{ answered_count }}/{{ total }}</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ progress }}%"></div>
+                    </div>
+                    <div class="progress-percentage">{{ "%.0f"|format(progress) }}%</div>
+                </div>
+                
+
+
+                <!-- Question Card -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <div class="question-number">Q{{ current }}</div>
+                        <div class="question-factor">
+                            {% if question.factor == 'O' %}
+                                🎨 {% if lang == 'en' %}Openness{% else %}개방성{% endif %}
+                            {% elif question.factor == 'C' %}
+                                📋 {% if lang == 'en' %}Conscientiousness{% else %}성실성{% endif %}
+                            {% elif question.factor == 'E' %}
+                                🎉 {% if lang == 'en' %}Extraversion{% else %}외향성{% endif %}
+                            {% elif question.factor == 'A' %}
+                                🤝 {% if lang == 'en' %}Agreeableness{% else %}우호성{% endif %}
+                            {% elif question.factor == 'N' %}
+                                😰 {% if lang == 'en' %}Neuroticism{% else %}신경성{% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="question-text">
+                        {{ question.text }}
+                    </div>
+
+                    <form method="POST" class="answer-form">
+                        <div class="answer-options">
+                            <label class="answer-option">
+                                <input type="radio" name="answer" value="1" {% if existing_answer == 1 %}checked{% endif %}>
+                                <div class="option-content">
+                                    <div class="option-emoji">😫</div>
+                                    <div class="option-text">{% if lang == 'en' %}Strongly Disagree{% else %}전혀 그렇지 않다{% endif %}</div>
+                                </div>
+                            </label>
+                            
+                            <label class="answer-option">
+                                <input type="radio" name="answer" value="2" {% if existing_answer == 2 %}checked{% endif %}>
+                                <div class="option-content">
+                                    <div class="option-emoji">😐</div>
+                                    <div class="option-text">{% if lang == 'en' %}Disagree{% else %}그렇지 않다{% endif %}</div>
+                                </div>
+                            </label>
+                            
+                            <label class="answer-option">
+                                <input type="radio" name="answer" value="3" {% if existing_answer == 3 %}checked{% endif %}>
+                                <div class="option-content">
+                                    <div class="option-emoji">😊</div>
+                                    <div class="option-text">{% if lang == 'en' %}Neutral{% else %}보통이다{% endif %}</div>
+                                </div>
+                            </label>
+                            
+                            <label class="answer-option">
+                                <input type="radio" name="answer" value="4" {% if existing_answer == 4 %}checked{% endif %}>
+                                <div class="option-content">
+                                    <div class="option-emoji">😄</div>
+                                    <div class="option-text">{% if lang == 'en' %}Agree{% else %}그렇다{% endif %}</div>
+                                </div>
+                            </label>
+                            
+                            <label class="answer-option">
+                                <input type="radio" name="answer" value="5" {% if existing_answer == 5 %}checked{% endif %}>
+                                <div class="option-content">
+                                    <div class="option-emoji">🤩</div>
+                                    <div class="option-text">{% if lang == 'en' %}Strongly Agree{% else %}매우 그렇다{% endif %}</div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="form-actions">
+                            <div class="navigation-buttons">
+                                {% if current > 1 %}
+                                <button type="submit" name="action" value="prev" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>{% if lang == 'en' %}Previous{% else %}이전{% endif %}
+                                </button>
+                                {% endif %}
+                                
+                                <button type="submit" name="action" value="next" class="btn btn-primary btn-lg btn-next" {% if not existing_answer %}disabled{% endif %} id="nextBtn">
+                                    {% if current == total %}
+                                        <i class="fas fa-check me-2"></i>{% if lang == 'en' %}See Results{% else %}결과 보기{% endif %}
+                                    {% else %}
+                                        <i class="fas fa-arrow-right me-2"></i>{% if lang == 'en' %}Next{% else %}다음{% endif %}
+                                    {% endif %}
+                                </button>
+                            </div>
+                            
+                            {% if answered_count >= total %}
+                            <div class="finish-option mt-3">
+                                <button type="submit" name="action" value="finish" class="btn btn-success btn-lg">
+                                    <i class="fas fa-flag-checkered me-2"></i>{% if lang == 'en' %}Finish Test{% else %}테스트 완료{% endif %}
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Motivation Messages -->
+                <div class="motivation-message">
+                    {% if lang == 'en' %}
+                        {% set messages = [
+                            "Great! You're more than halfway done! 🎉",
+                            "Almost there! Just a little more! 💪",
+                            "I'm getting curious about your personality! ✨",
+                            "Honest answers make accurate results! 🎯",
+                            "Final sprint! You're almost finished! 🏃‍♀️"
+                        ] %}
+                    {% else %}
+                        {% set messages = [
+                            "좋아요! 절반 이상 완료했어요 🎉",
+                            "거의 다 왔어요! 조금만 더 힘내세요 💪",
+                            "당신의 성격이 궁금해지네요 ✨",
+                            "정직한 답변이 정확한 결과를 만들어요 🎯",
+                            "마지막 스퍼트! 거의 완주했어요 🏃‍♀️"
+                        ] %}
+                    {% endif %}
+                    {% if current > 25 %}
+                        {{ messages[(current // 10) % messages|length] }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const radioButtons = document.querySelectorAll('input[name="answer"]');
+    const nextButton = document.getElementById('nextBtn');
+    const answerOptions = document.querySelectorAll('.answer-option');
+
+    // Initialize selected state based on existing answer
+    function initializeSelectedState() {
+        const checkedRadio = document.querySelector('input[name="answer"]:checked');
+        if (checkedRadio) {
+            const selectedOption = checkedRadio.closest('.answer-option');
+            selectedOption.classList.add('selected');
+            nextButton.disabled = false;
+            nextButton.classList.add('btn-pulse');
+        }
+    }
+
+    // Enable next button when an answer is selected
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            nextButton.disabled = false;
+            nextButton.classList.add('btn-pulse');
+        });
+    });
+
+    // Add click animation to answer options
+    answerOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove active class from all options
+            answerOptions.forEach(opt => opt.classList.remove('selected'));
+            // Add active class to clicked option
+            this.classList.add('selected');
+        });
+    });
+
+    // Add keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key >= '1' && e.key <= '5') {
+            const radioButton = document.querySelector(`input[value="${e.key}"]`);
+            if (radioButton) {
+                radioButton.checked = true;
+                radioButton.dispatchEvent(new Event('change'));
+                radioButton.closest('.answer-option').click();
+            }
+        }
+        
+        if (e.key === 'Enter' && !nextButton.disabled) {
+            nextButton.click();
+        }
+        
+        // Navigation shortcuts
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            const prevButton = document.querySelector('button[value="prev"]');
+            if (prevButton) {
+                e.preventDefault();
+                prevButton.click();
+            }
+        }
+        
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            if (!nextButton.disabled) {
+                e.preventDefault();
+                nextButton.click();
+            }
+        }
+    });
+
+    // Initialize on page load
+    initializeSelectedState();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}{% if lang == 'en' %}Big5 Personality Test - Discover Your True Self{% else %}Big5 성격 테스트 - 나를 알아가는 여정{% endif %}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <span class="gradient-text">{% if lang == 'en' %}Discover Your True Personality{% else %}당신의 진짜 성격{% endif %}</span><br>
+                        {% if lang == 'en' %}Today ✨{% else %}발견해보세요 ✨{% endif %}
+                    </h1>
+                    <p class="hero-subtitle">
+                        {% if lang == 'en' %}
+                        Analyze your unique personality with<br>
+                        the scientifically validated Big5 test
+                        {% else %}
+                        과학적으로 검증된 Big5 성격 테스트로<br>
+                        나만의 독특한 성격을 분석해보세요
+                        {% endif %}
+                    </p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">5</div>
+                            <div class="stat-label">{% if lang == 'en' %}Core Personality Factors{% else %}핵심 성격 요인{% endif %}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">50</div>
+                            <div class="stat-label">{% if lang == 'en' %}Precise Questions{% else %}정밀한 질문{% endif %}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{% if lang == 'en' %}3min{% else %}3분{% endif %}</div>
+                            <div class="stat-label">{% if lang == 'en' %}Duration{% else %}소요 시간{% endif %}</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('start_test') }}" class="btn btn-primary btn-lg btn-start">
+                        <i class="fas fa-play me-2"></i>{% if lang == 'en' %}Start Test{% else %}테스트 시작하기{% endif %}
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-visual">
+                    <div class="personality-wheel">
+                        <div class="wheel-center">
+                            <i class="fas fa-user-circle"></i>
+                            <span>YOU</span>
+                        </div>
+                        <div class="wheel-segment" style="--rotation: 0deg; --color: #FF6B6B;">
+                            <span>🎨 {% if lang == 'en' %}Openness{% else %}개방성{% endif %}</span>
+                        </div>
+                        <div class="wheel-segment" style="--rotation: 72deg; --color: #4ECDC4;">
+                            <span>📋 {% if lang == 'en' %}Conscientiousness{% else %}성실성{% endif %}</span>
+                        </div>
+                        <div class="wheel-segment" style="--rotation: 144deg; --color: #45B7D1;">
+                            <span>🎉 {% if lang == 'en' %}Extraversion{% else %}외향성{% endif %}</span>
+                        </div>
+                        <div class="wheel-segment" style="--rotation: 216deg; --color: #96CEB4;">
+                            <span>🤝 {% if lang == 'en' %}Agreeableness{% else %}우호성{% endif %}</span>
+                        </div>
+                        <div class="wheel-segment" style="--rotation: 288deg; --color: #FFEAA7;">
+                            <span>😰 {% if lang == 'en' %}Neuroticism{% else %}신경성{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center mb-5">
+                <h2 class="section-title">{% if lang == 'en' %}Why Big5 is Special{% else %}Big5가 특별한 이유{% endif %}</h2>
+                <p class="section-subtitle">{% if lang == 'en' %}A globally recognized scientific personality analysis tool{% else %}세계적으로 인정받은 과학적 성격 분석 도구{% endif %}</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-microscope"></i>
+                    </div>
+                    <h3>{% if lang == 'en' %}Scientific Validation{% else %}과학적 검증{% endif %}</h3>
+                    <p>{% if lang == 'en' %}A reliable personality model researched and validated by psychologists worldwide for over 40 years.{% else %}전 세계 심리학자들이 40년 이상 연구하고 검증한 신뢰할 수 있는 성격 모델입니다.{% endif %}</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>{% if lang == 'en' %}Precise Analysis{% else %}정확한 분석{% endif %}</h3>
+                    <p>{% if lang == 'en' %}Provides precise numerical analysis of 5 core personality factors, not just simple type classification.{% else %}단순한 유형 분류가 아닌 5가지 핵심 성격 요인의 정밀한 수치 분석을 제공합니다.{% endif %}</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>{% if lang == 'en' %}Growth Guide{% else %}성장 가이드{% endif %}</h3>
+                    <p>{% if lang == 'en' %}Understand your personality traits and receive specific guidance for personal and professional growth.{% else %}당신의 성격 특성을 이해하고 개인적, 직업적 성장을 위한 구체적인 가이드를 제공합니다.{% endif %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="cta-title">{% if lang == 'en' %}Start Now!{% else %}지금 바로 시작하세요!{% endif %}</h2>
+                <p class="cta-subtitle">{% if lang == 'en' %}Invest just 3 minutes to gain valuable self-understanding that will last a lifetime{% else %}3분만 투자하여 평생 간직할 소중한 자기 이해를 얻어보세요{% endif %}</p>
+                <a href="{{ url_for('start_test') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-arrow-right me-2"></i>{% if lang == 'en' %}Start Free Test{% else %}무료 테스트 시작{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

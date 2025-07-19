@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}{% if lang == 'en' %}Previous Test Results{% else %}이전 테스트 결과{% endif %}{% endblock %}
+
+{% block content %}
+<div class="previous-results-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="page-header text-center mb-5">
+                    <h1 class="page-title">📊 {% if lang == 'en' %}Previous Test Results{% else %}이전 테스트 결과{% endif %}</h1>
+                    <p class="page-subtitle">{% if lang == 'en' %}Review your personality test history and track your growth{% else %}성격 테스트 기록을 확인하고 성장을 추적해보세요{% endif %}</p>
+                </div>
+
+                {% if results %}
+                    <div class="results-list">
+                        {% for result in results %}
+                        <div class="result-card mb-4">
+                            <div class="result-header">
+                                <div class="result-date">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    {{ result.test_date.strftime('%Y.%m.%d %H:%M') }}
+                                </div>
+                                <div class="result-id">
+                                    ID: {{ result.id }}
+                                </div>
+                            </div>
+                            
+                            <div class="result-scores">
+                                <div class="score-grid">
+                                    <div class="score-item">
+                                        <div class="score-label">
+                                            🎨 {% if lang == 'en' %}Openness{% else %}개방성{% endif %}
+                                        </div>
+                                        <div class="score-value">{{ "%.0f"|format(result.openness) }}%</div>
+                                        <div class="score-bar">
+                                            <div class="score-fill openness" style="width: {{ result.openness }}%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="score-item">
+                                        <div class="score-label">
+                                            📋 {% if lang == 'en' %}Conscientiousness{% else %}성실성{% endif %}
+                                        </div>
+                                        <div class="score-value">{{ "%.0f"|format(result.conscientiousness) }}%</div>
+                                        <div class="score-bar">
+                                            <div class="score-fill conscientiousness" style="width: {{ result.conscientiousness }}%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="score-item">
+                                        <div class="score-label">
+                                            🎉 {% if lang == 'en' %}Extraversion{% else %}외향성{% endif %}
+                                        </div>
+                                        <div class="score-value">{{ "%.0f"|format(result.extraversion) }}%</div>
+                                        <div class="score-bar">
+                                            <div class="score-fill extraversion" style="width: {{ result.extraversion }}%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="score-item">
+                                        <div class="score-label">
+                                            🤝 {% if lang == 'en' %}Agreeableness{% else %}우호성{% endif %}
+                                        </div>
+                                        <div class="score-value">{{ "%.0f"|format(result.agreeableness) }}%</div>
+                                        <div class="score-bar">
+                                            <div class="score-fill agreeableness" style="width: {{ result.agreeableness }}%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="score-item">
+                                        <div class="score-label">
+                                            😰 {% if lang == 'en' %}Neuroticism{% else %}신경성{% endif %}
+                                        </div>
+                                        <div class="score-value">{{ "%.0f"|format(result.neuroticism) }}%</div>
+                                        <div class="score-bar">
+                                            <div class="score-fill neuroticism" style="width: {{ result.neuroticism }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="result-summary">
+                                <div class="personality-type">
+                                    <strong>{% if lang == 'en' %}Personality Type:{% else %}성격 유형:{% endif %}</strong> 
+                                    {{ result.personality_type }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-results text-center">
+                        <div class="no-results-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3>{% if lang == 'en' %}No previous results{% else %}이전 결과가 없습니다{% endif %}</h3>
+                        <p>{% if lang == 'en' %}Take your first personality test to see results here.{% else %}첫 번째 성격 테스트를 받아보세요.{% endif %}</p>
+                        <a href="{{ url_for('start_test') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-play me-2"></i>{% if lang == 'en' %}Start Test{% else %}테스트 시작하기{% endif %}
+                        </a>
+                    </div>
+                {% endif %}
+                
+                <div class="action-section text-center mt-5">
+                    <a href="{{ url_for('index', lang=lang) }}" class="btn btn-outline-primary btn-lg me-3">
+                        <i class="fas fa-home me-2"></i>{% if lang == 'en' %}Home{% else %}홈으로{% endif %}
+                    </a>
+                    <a href="{{ url_for('start_test') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>{% if lang == 'en' %}New Test{% else %}새 테스트{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.previous-results-container {
+    padding-top: 120px;
+    padding-bottom: 50px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.page-header {
+    color: white;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.page-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.result-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.result-date {
+    font-size: 1.1rem;
+    color: #334155;
+    font-weight: 600;
+}
+
+.result-id {
+    background: #e2e8f0;
+    color: #64748b;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.score-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.score-item {
+    text-align: center;
+}
+
+.score-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.5rem;
+}
+
+.score-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.score-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.score-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s ease;
+}
+
+.score-fill.openness { background: linear-gradient(90deg, #FF6B6B, #FF8E8E); }
+.score-fill.conscientiousness { background: linear-gradient(90deg, #4ECDC4, #7FDBDA); }
+.score-fill.extraversion { background: linear-gradient(90deg, #45B7D1, #74C7E3); }
+.score-fill.agreeableness { background: linear-gradient(90deg, #96CEB4, #B5D6C7); }
+.score-fill.neuroticism { background: linear-gradient(90deg, #FFEAA7, #FFEFBA); }
+
+.result-summary {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid #f1f5f9;
+    text-align: center;
+}
+
+.personality-type {
+    font-size: 1.1rem;
+    color: #334155;
+}
+
+.no-results {
+    padding: 4rem 2rem;
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    color: #cbd5e1;
+    margin-bottom: 2rem;
+}
+
+.no-results h3 {
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.no-results p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.action-section {
+    padding-top: 2rem;
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+    .result-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .score-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}

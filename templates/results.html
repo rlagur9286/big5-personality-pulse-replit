@@ -1,0 +1,607 @@
+{% extends "base.html" %}
+
+{% block title %}{% if lang == 'en' %}Big5 Personality Test Results - Your Personality Analysis{% else %}Big5 성격 테스트 결과 - 당신의 성격 분석{% endif %}{% endblock %}
+
+{% block content %}
+<div class="results-hero-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <div class="results-hero-content">
+                    <div class="results-badge">
+                        <i class="fas fa-trophy"></i>
+                        <span>{% if lang == 'en' %}Complete!{% else %}완료!{% endif %}</span>
+                    </div>
+                    <h1 class="results-hero-title">
+                        <span class="results-sparkle">✨</span>
+                        {% if lang == 'en' %}Your Personality Discovery{% else %}나만의 성격 탐험{% endif %}
+                        <span class="results-sparkle">✨</span>
+                    </h1>
+                    <p class="results-hero-subtitle">
+                        {% if lang == 'en' %}Understanding yourself through the Big5 personality analysis{% else %}Big5 성격 분석으로 나를 더 깊이 이해하기{% endif %}
+                    </p>
+                    <div class="results-meta">
+                        <span class="results-date">{{ current_date }}</span>
+                        <span class="results-separator">•</span>
+                        <span class="results-type">Big5 Personality Test</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="results-main-container">
+    <div class="container">
+        <!-- Anime Character Match Section -->
+        {% if anime_character %}
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-10">
+                <div class="anime-character-card">
+                    <div class="character-header">
+                        <div class="character-image">
+                            {% if anime_character.data.image_path %}
+                                <img src="{{ anime_character.data.image_path }}" alt="{{ anime_character.name }}" class="character-img">
+                            {% else %}
+                                <div class="character-emoji">{{ anime_character.data.image_emoji }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="character-info">
+                            <h2 class="character-name">
+                                {% if lang == 'en' %}You are like{% else %}당신은{% endif %} "{{ anime_character.name }}"
+                                <span class="anime-title">{% if lang == 'en' %}from{% else %}({% endif %} {{ anime_character.data.anime }}{% if lang == 'ko' %}){% endif %}</span>
+                            </h2>
+                            <div class="match-percentage">
+                                <span class="match-icon">🎯</span>
+                                <span class="match-text">{{ anime_character.match_percentage }}% {% if lang == 'en' %}Match{% else %}일치{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="character-content">
+                        <div class="character-personality">
+                            <h3 class="personality-title">
+                                <i class="fas fa-star me-2"></i>
+                                {% if lang == 'en' %}Character Personality{% else %}캐릭터 성격{% endif %}
+                            </h3>
+                            <p class="personality-description">{{ anime_character.data.personality }}</p>
+                            <p class="personality-detail">{{ anime_character.data.description }}</p>
+                        </div>
+                        
+                        <div class="character-traits">
+                            <h4 class="traits-title">
+                                <i class="fas fa-tags me-2"></i>
+                                {% if lang == 'en' %}Key Traits{% else %}주요 특성{% endif %}
+                            </h4>
+                            <div class="traits-list">
+                                {% for trait in anime_character.data.traits %}
+                                <span class="trait-pill">{{ trait }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="character-analysis">
+                            <h4 class="analysis-title">
+                                <i class="fas fa-search me-2"></i>
+                                {% if lang == 'en' %}Why This Match?{% else %}왜 이 캐릭터일까요?{% endif %}
+                            </h4>
+                            <div class="analysis-content">
+                                <p class="analysis-text">
+                                    {% if lang == 'en' %}
+                                    Your personality profile shows strong similarities with {{ anime_character.name }}. 
+                                    Like this character, you demonstrate similar patterns in how you approach life, 
+                                    handle challenges, and interact with others.
+                                    {% else %}
+                                    당신의 성격 프로필은 {{ anime_character.name }}와 강한 유사성을 보여줍니다. 
+                                    이 캐릭터처럼, 당신도 삶에 접근하는 방식, 도전을 다루는 방법, 
+                                    그리고 다른 사람들과 상호작용하는 패턴에서 비슷한 모습을 보입니다.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Personality Overview Card -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-10">
+                <div class="personality-overview-card">
+                    <div class="overview-header">
+                        <h2 class="overview-title">
+                            <i class="fas fa-user-circle me-2"></i>
+                            {% if lang == 'en' %}Your Personality Profile{% else %}나의 성격 프로필{% endif %}
+                        </h2>
+                        <p class="overview-description">
+                            {% if lang == 'en' %}Discover the five dimensions that shape your unique personality{% else %}나만의 독특한 성격을 구성하는 다섯 가지 차원을 발견해보세요{% endif %}
+                        </p>
+                    </div>
+                    <div class="chart-section">
+                        <div class="chart-container-wrapper">
+                            <canvas id="personalityChart"></canvas>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #6366f1;"></span>
+                                <span class="legend-text">{% if lang == 'en' %}Your Score{% else %}나의 점수{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Big5 Factor Cards -->
+        <div class="row g-4 mb-5">
+            {% for factor, data in insights.items() %}
+            <div class="col-lg-6">
+                <div class="factor-result-card" data-factor="{{ factor }}">
+                    <div class="factor-card-header">
+                        <div class="factor-icon-wrapper">
+                            <div class="factor-icon-bg" style="background: {{ data.color }}15;">
+                                <span class="factor-emoji">{{ data.emoji }}</span>
+                            </div>
+                        </div>
+                        <div class="factor-title-section">
+                            <h3 class="factor-title">{{ data.name }}</h3>
+                            <p class="factor-subtitle">{{ data.description }}</p>
+                        </div>
+                        <div class="factor-score-display">
+                            <div class="score-circle-modern" data-score="{{ data.score }}" style="--score-color: {{ data.color }};">
+                                <svg class="score-svg" viewBox="0 0 100 100">
+                                    <circle class="score-bg" cx="50" cy="50" r="45"></circle>
+                                    <circle class="score-fill" cx="50" cy="50" r="45" 
+                                            style="stroke-dasharray: {{ (data.score * 2.827)|round(2) }} 282.7; stroke: {{ data.color }};"></circle>
+                                </svg>
+                                <div class="score-content">
+                                    <span class="score-number">{{ "%.0f"|format(data.score) }}</span>
+                                    <span class="score-label">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="factor-content">
+                        <div class="level-indicator">
+                            {% if data.level == 'high' %}
+                                <div class="level-badge level-high" style="background: {{ data.color }}20; color: {{ data.color }};">
+                                    <i class="fas fa-arrow-up me-1"></i>{% if lang == 'en' %}High Level{% else %}높은 수준{% endif %}
+                                </div>
+                            {% elif data.level == 'low' %}
+                                <div class="level-badge level-low" style="background: #64748b20; color: #64748b;">
+                                    <i class="fas fa-arrow-down me-1"></i>{% if lang == 'en' %}Low Level{% else %}낮은 수준{% endif %}
+                                </div>
+                            {% else %}
+                                <div class="level-badge level-medium" style="background: #f59e0b20; color: #f59e0b;">
+                                    <i class="fas fa-minus me-1"></i>{% if lang == 'en' %}Balanced{% else %}균형적{% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="factor-explanation">
+                            {% if data.level == 'high' %}
+                                <p class="explanation-text">{{ data.high }}</p>
+                            {% elif data.level == 'low' %}
+                                <p class="explanation-text">{{ data.low }}</p>
+                            {% else %}
+                                <p class="explanation-text">{% if lang == 'en' %}Shows balanced tendencies. Can adapt flexibly according to the situation.{% else %}균형잡힌 성향을 보여줍니다. 상황에 따라 유연하게 적응할 수 있습니다.{% endif %}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="career-recommendations">
+                            <h6 class="career-title">
+                                <i class="fas fa-briefcase me-2"></i>
+                                {% if lang == 'en' %}Recommended Careers{% else %}추천 직업{% endif %}
+                            </h6>
+                            <div class="career-list">
+                                {% if data.level == 'high' %}
+                                    {% for career in data.careers_high[:4] %}
+                                        <span class="career-pill">{{ career }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    {% for career in data.careers_low[:4] %}
+                                        <span class="career-pill">{{ career }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Personality Summary Section -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-10">
+                <div class="personality-summary-card">
+                    <div class="summary-header">
+                        <div class="summary-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 class="summary-title">{% if lang == 'en' %}Your Personality Insights{% else %}나의 성격 인사이트{% endif %}</h3>
+                        <p class="summary-subtitle">{% if lang == 'en' %}Understanding your unique personality composition{% else %}나만의 독특한 성격 구성 이해하기{% endif %}</p>
+                    </div>
+                    
+                    <div class="summary-content">
+                        <div class="personality-description">
+                            <h4 class="description-title">{% if lang == 'en' %}Your Personality Type{% else %}당신의 성격 유형{% endif %}</h4>
+                            <p class="description-text">
+                                {% if lang == 'en' %}Based on your Big5 results, you are{% else %}Big5 결과를 바탕으로, 당신은{% endif %}
+                                {% for factor, data in insights.items() %}
+                                    {% if data.level == 'high' %}
+                                        <span class="highlight-trait high">{{ data.name.split(' ')[0] }}</span>{% if lang == 'en' %} oriented{% else %}지향적{% endif %}{% if not loop.last %}, {% endif %}
+                                    {% elif data.level == 'low' %}
+                                        <span class="highlight-trait low">{{ data.name.split(' ')[0] }}</span>{% if lang == 'en' %} moderate{% else %}적당한{% endif %}{% if not loop.last %}, {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if lang == 'en' %}characteristics, creating your unique personality profile.{% else %}특성을 가지고 있어 독특한 성격 프로필을 만들어냅니다.{% endif %}
+                            </p>
+                        </div>
+
+                        <div class="growth-recommendations">
+                            <h4 class="growth-title">
+                                <i class="fas fa-seedling me-2"></i>
+                                {% if lang == 'en' %}Personal Growth Suggestions{% else %}개인 성장 제안{% endif %}
+                            </h4>
+                            <div class="growth-grid">
+                                {% if insights.N.level == 'high' %}
+                                <div class="growth-item">
+                                    <div class="growth-icon">🧘</div>
+                                    <div class="growth-text">
+                                        <h6>{% if lang == 'en' %}Stress Management{% else %}스트레스 관리{% endif %}</h6>
+                                        <p>{% if lang == 'en' %}Try regular meditation or exercise for emotional balance{% else %}감정적 균형을 위한 명상이나 운동을 규칙적으로 시도해보세요{% endif %}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if insights.E.level == 'low' %}
+                                <div class="growth-item">
+                                    <div class="growth-icon">👥</div>
+                                    <div class="growth-text">
+                                        <h6>{% if lang == 'en' %}Social Skills{% else %}사회적 기술{% endif %}</h6>
+                                        <p>{% if lang == 'en' %}Start with small gatherings to build confidence{% else %}자신감을 쌓기 위해 소규모 모임부터 시작하세요{% endif %}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if insights.C.level == 'low' %}
+                                <div class="growth-item">
+                                    <div class="growth-icon">🎯</div>
+                                    <div class="growth-text">
+                                        <h6>{% if lang == 'en' %}Goal Setting{% else %}목표 설정{% endif %}</h6>
+                                        <p>{% if lang == 'en' %}Practice setting and achieving small, manageable goals{% else %}작고 관리 가능한 목표를 설정하고 달성하는 연습을 하세요{% endif %}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if insights.O.level == 'low' %}
+                                <div class="growth-item">
+                                    <div class="growth-icon">🎨</div>
+                                    <div class="growth-text">
+                                        <h6>{% if lang == 'en' %}Creativity{% else %}창의성{% endif %}</h6>
+                                        <p>{% if lang == 'en' %}Explore new hobbies or creative activities{% else %}새로운 취미나 창의적 활동을 탐색해보세요{% endif %}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if insights.A.level == 'low' %}
+                                <div class="growth-item">
+                                    <div class="growth-icon">🤝</div>
+                                    <div class="growth-text">
+                                        <h6>{% if lang == 'en' %}Empathy{% else %}공감 능력{% endif %}</h6>
+                                        <p>{% if lang == 'en' %}Practice understanding different perspectives{% else %}다양한 관점을 이해하는 연습을 해보세요{% endif %}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Section -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="action-section">
+                    <div class="action-header">
+                        <h4 class="action-title">{% if lang == 'en' %}What's Next?{% else %}다음 단계는?{% endif %}</h4>
+                        <p class="action-subtitle">{% if lang == 'en' %}Continue your personality journey{% else %}성격 탐험을 계속해보세요{% endif %}</p>
+                    </div>
+                    
+                    <div class="action-buttons-grid">
+                        <button class="action-btn action-btn-primary" onclick="shareResults()">
+                            <div class="action-btn-icon">
+                                <i class="fas fa-share-alt"></i>
+                            </div>
+                            <div class="action-btn-content">
+                                <h6>{% if lang == 'en' %}Share Results{% else %}결과 공유하기{% endif %}</h6>
+                                <small>{% if lang == 'en' %}Let others see your personality{% else %}다른 사람들에게 내 성격을 보여주세요{% endif %}</small>
+                            </div>
+                        </button>
+                        
+                        <a href="{{ url_for('start_test') }}" class="action-btn action-btn-secondary">
+                            <div class="action-btn-icon">
+                                <i class="fas fa-redo"></i>
+                            </div>
+                            <div class="action-btn-content">
+                                <h6>{% if lang == 'en' %}Retake Test{% else %}다시 테스트하기{% endif %}</h6>
+                                <small>{% if lang == 'en' %}Test again after some time{% else %}시간이 지난 후 다시 테스트해보세요{% endif %}</small>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ url_for('previous_results') }}" class="action-btn action-btn-tertiary">
+                            <div class="action-btn-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="action-btn-content">
+                                <h6>{% if lang == 'en' %}View History{% else %}이력 보기{% endif %}</h6>
+                                <small>{% if lang == 'en' %}See your previous results{% else %}이전 결과들을 확인하세요{% endif %}</small>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="save-notice">
+                        <i class="fas fa-check-circle me-2"></i>
+                        {% if lang == 'en' %}Your results have been automatically saved{% else %}결과가 자동으로 저장되었습니다{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Personality Radar Chart with enhanced design
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('personalityChart').getContext('2d');
+    
+    // Create gradient for the chart
+    const gradient = ctx.createRadialGradient(200, 200, 0, 200, 200, 200);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.1)');
+    
+    const personalityChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: {% if lang == 'en' %}['Openness', 'Conscientiousness', 'Extraversion', 'Agreeableness', 'Neuroticism']{% else %}['개방성', '성실성', '외향성', '우호성', '신경성']{% endif %},
+            datasets: [{
+                label: '{% if lang == 'en' %}My Personality{% else %}나의 성격{% endif %}',
+                data: [
+                    {{ scores.O }},
+                    {{ scores.C }},
+                    {{ scores.E }},
+                    {{ scores.A }},
+                    {{ scores.N }}
+                ],
+                backgroundColor: gradient,
+                borderColor: '#6366f1',
+                borderWidth: 3,
+                pointBackgroundColor: [
+                    '{{ insights.O.color }}',
+                    '{{ insights.C.color }}', 
+                    '{{ insights.E.color }}',
+                    '{{ insights.A.color }}',
+                    '{{ insights.N.color }}'
+                ],
+                pointBorderColor: '#fff',
+                pointBorderWidth: 3,
+                pointRadius: 8,
+                pointHoverRadius: 12
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20,
+                        color: '#64748b',
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: '#e2e8f0',
+                        lineWidth: 1
+                    },
+                    pointLabels: {
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        color: '#1e293b'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#6366f1',
+                    borderWidth: 1,
+                    cornerRadius: 8
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+
+    // Animate score circles with modern design
+    const scoreCircles = document.querySelectorAll('.score-circle-modern');
+    scoreCircles.forEach((circle, index) => {
+        const score = circle.dataset.score;
+        const fillCircle = circle.querySelector('.score-fill');
+        const circumference = 2 * Math.PI * 45; // radius = 45
+        const offset = circumference - (score / 100) * circumference;
+        
+        fillCircle.style.strokeDasharray = circumference;
+        fillCircle.style.strokeDashoffset = circumference;
+        
+        // Animate the circle
+        setTimeout(() => {
+            fillCircle.style.strokeDashoffset = offset;
+        }, 500 + (index * 200));
+    });
+
+    // Animate factor cards on scroll
+    const animateOnScroll = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.animation = 'slideInUp 0.6s ease-out forwards';
+                    entry.target.style.opacity = '1';
+                }, index * 100);
+            }
+        });
+    }, {
+        threshold: 0.2,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    // Observe elements for animation
+    document.querySelectorAll('.factor-result-card').forEach(card => {
+        card.style.opacity = '0';
+        animateOnScroll.observe(card);
+    });
+
+    document.querySelectorAll('.personality-summary-card, .action-section').forEach(element => {
+        element.style.opacity = '0';
+        animateOnScroll.observe(element);
+    });
+});
+
+// Enhanced share function
+function shareResults() {
+    const shareUrl = '{{ share_url|safe }}' || window.location.href;
+    const shareData = {
+        title: {% if lang == 'en' %}'Big5 Personality Test Results'{% else %}'Big5 성격 테스트 결과'{% endif %},
+        text: {% if lang == 'en' %}'Check out my personality analysis results!'{% else %}'나의 성격 분석 결과를 확인해보세요!'{% endif %},
+        url: shareUrl
+    };
+
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        navigator.share(shareData).catch(err => {
+            console.log('Error sharing:', err);
+            fallbackShare(shareUrl);
+        });
+    } else {
+        fallbackShare(shareUrl);
+    }
+}
+
+function fallbackShare(url) {
+    const shareUrl = url || window.location.href;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showNotification({% if lang == 'en' %}'Share link copied to clipboard!'{% else %}'공유 링크가 클립보드에 복사되었습니다!'{% endif %}, 'success');
+        }).catch(() => {
+            showShareModal(shareUrl);
+        });
+    } else {
+        showShareModal(shareUrl);
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-check-circle me-2"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+function showShareModal(url) {
+    const modal = document.createElement('div');
+    modal.className = 'share-modal-overlay';
+    modal.innerHTML = `
+        <div class="share-modal">
+            <h4>{% if lang == 'en' %}Share Your Results{% else %}결과 공유하기{% endif %}</h4>
+            <p>{% if lang == 'en' %}Copy the link below to share your personality test results:{% else %}아래 링크를 복사하여 성격 테스트 결과를 공유하세요:{% endif %}</p>
+            <div class="share-link-container">
+                <input type="text" value="${url}" readonly class="share-link-input">
+                <button onclick="copyShareUrl()" class="copy-btn">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            <button onclick="closeShareModal()" class="btn btn-secondary mt-3">
+                {% if lang == 'en' %}Close{% else %}닫기{% endif %}
+            </button>
+        </div>
+    `;
+    
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    `;
+    
+    document.body.appendChild(modal);
+    window.currentShareModal = modal;
+}
+
+function copyShareUrl() {
+    const input = document.querySelector('.share-link-input');
+    input.select();
+    document.execCommand('copy');
+    showNotification({% if lang == 'en' %}'Link copied!'{% else %}'링크가 복사되었습니다!'{% endif %}, 'success');
+    closeShareModal();
+}
+
+function closeShareModal() {
+    if (window.currentShareModal) {
+        document.body.removeChild(window.currentShareModal);
+        window.currentShareModal = null;
+    }
+}
+</script>
+{% endblock %}

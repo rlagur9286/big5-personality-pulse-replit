@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{% if lang == 'en' %}Page Not Found{% else %}페이지를 찾을 수 없습니다{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container text-center" style="padding: 6rem 0;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="error-content">
+                <h1 class="display-1 text-muted">404</h1>
+                <h2 class="mb-4">
+                    {% if lang == 'en' %}Page Not Found{% else %}페이지를 찾을 수 없습니다{% endif %}
+                </h2>
+                <p class="lead mb-4">
+                    {% if lang == 'en' %}
+                        The personality test result you're looking for doesn't exist or has been removed.
+                    {% else %}
+                        찾고 계신 성격 테스트 결과가 존재하지 않거나 삭제되었습니다.
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-home me-2"></i>
+                    {% if lang == 'en' %}Go Home{% else %}홈으로 돌아가기{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

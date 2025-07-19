@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if lang == 'en' %}Big5 Personality Test Results{% else %}Big5 성격 테스트 결과{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Results Hero Section -->
+<div class="results-hero-section">
+    <div class="results-hero-content">
+        <div class="container text-center">
+            <div class="results-badge">
+                <i class="fas fa-share-alt results-sparkle"></i>
+                {% if lang == 'en' %}Shared Results{% else %}공유된 결과{% endif %}
+            </div>
+            <h1 class="results-hero-title">
+                {% if lang == 'en' %}Big5 Personality Analysis{% else %}Big5 성격 분석 결과{% endif %}
+            </h1>
+            <p class="results-hero-subtitle">
+                {% if lang == 'en' %}Comprehensive personality insights based on the Big Five model{% else %}빅 파이브 모델을 기반으로 한 종합적인 성격 분석{% endif %}
+            </p>
+            <div class="results-meta">
+                <span><i class="fas fa-calendar-alt me-2"></i>{{ test_date }}</span>
+                <span class="results-separator">•</span>
+                <span><i class="fas fa-chart-bar me-2"></i>{% if lang == 'en' %}5 Factors Analyzed{% else %}5개 요인 분석{% endif %}</span>
+                <span class="results-separator">•</span>
+                <span><i class="fas fa-users me-2"></i>{% if lang == 'en' %}Shared Result{% else %}공유된 결과{% endif %}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Results Container -->
+<div class="results-main-container">
+    <div class="container">
+        <!-- Anime Character Match Section -->
+        {% if anime_character %}
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-10">
+                <div class="anime-character-card">
+                    <div class="character-header">
+                        <div class="character-image">
+                            {% if anime_character.data.image_path %}
+                                <img src="{{ anime_character.data.image_path }}" alt="{{ anime_character.name }}" class="character-img">
+                            {% else %}
+                                <div class="character-emoji">{{ anime_character.data.image_emoji }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="character-info">
+                            <h2 class="character-name">
+                                {% if lang == 'en' %}This person is like{% else %}이 분은{% endif %} "{{ anime_character.name }}"
+                                <span class="anime-title">{% if lang == 'en' %}from{% else %}({% endif %} {{ anime_character.data.anime }}{% if lang == 'ko' %}){% endif %}</span>
+                            </h2>
+                            <div class="match-percentage">
+                                <span class="match-icon">🎯</span>
+                                <span class="match-text">{{ anime_character.match_percentage }}% {% if lang == 'en' %}Match{% else %}일치{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="character-content">
+                        <div class="character-personality">
+                            <h3 class="personality-title">
+                                <i class="fas fa-star me-2"></i>
+                                {% if lang == 'en' %}Character Personality{% else %}캐릭터 성격{% endif %}
+                            </h3>
+                            <p class="personality-description">{{ anime_character.data.personality }}</p>
+                            <p class="personality-detail">{{ anime_character.data.description }}</p>
+                        </div>
+                        
+                        <div class="character-traits">
+                            <h4 class="traits-title">
+                                <i class="fas fa-tags me-2"></i>
+                                {% if lang == 'en' %}Key Traits{% else %}주요 특성{% endif %}
+                            </h4>
+                            <div class="traits-list">
+                                {% for trait in anime_character.data.traits %}
+                                <span class="trait-pill">{{ trait }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Personality Overview Card -->
+        <div class="personality-overview-card">
+            <div class="overview-header">
+                <h2 class="overview-title">
+                    {% if lang == 'en' %}Personality Overview{% else %}성격 개요{% endif %}
+                </h2>
+                <p class="overview-description">
+                    {% if lang == 'en' %}Your personality profile across the Big Five dimensions{% else %}빅 파이브 차원에 따른 성격 프로필{% endif %}
+                </p>
+            </div>
+            
+            <div class="chart-section">
+                <div class="chart-container-wrapper">
+                    <canvas id="personalityChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #6366f1;"></div>
+                        <span class="legend-text">
+                            {% if lang == 'en' %}Your Profile{% else %}성격 프로필{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Factor Results -->
+        <div class="row">
+            {% for factor_key, factor_data in insights.items() %}
+            <div class="col-lg-6 mb-4">
+                <div class="factor-result-card">
+                    <div class="factor-card-header">
+                        <div class="factor-icon-wrapper">
+                            <div class="factor-icon-bg" style="background: {{ factor_data.color }}20; color: {{ factor_data.color }};">
+                                {{ factor_data.emoji }}
+                            </div>
+                        </div>
+                        <div class="factor-title-section">
+                            <h3 class="factor-title">{{ factor_data.name }}</h3>
+                            <p class="factor-subtitle">{{ factor_data.description }}</p>
+                        </div>
+                        <div class="factor-score-display">
+                            <div class="score-circle-modern" data-score="{{ factor_data.score }}">
+                                <svg class="score-svg">
+                                    <circle class="score-bg" cx="40" cy="40" r="32"></circle>
+                                    <circle class="score-fill" cx="40" cy="40" r="32" 
+                                            style="stroke: {{ factor_data.color }}"></circle>
+                                </svg>
+                                <div class="score-content">
+                                    <div class="score-number">{{ "%.0f"|format(factor_data.score) }}</div>
+                                    <div class="score-label">%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="factor-content">
+                        <div class="level-indicator">
+                            {% if factor_data.level == 'high' %}
+                                <span class="level-badge" style="background: {{ factor_data.color }}20; color: {{ factor_data.color }};">
+                                    {% if lang == 'en' %}High Level{% else %}높은 수준{% endif %}
+                                </span>
+                            {% elif factor_data.level == 'low' %}
+                                <span class="level-badge" style="background: #f3f4f6; color: #6b7280;">
+                                    {% if lang == 'en' %}Low Level{% else %}낮은 수준{% endif %}
+                                </span>
+                            {% else %}
+                                <span class="level-badge" style="background: #fef3c7; color: #d97706;">
+                                    {% if lang == 'en' %}Medium Level{% else %}보통 수준{% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="explanation-text">
+                            {% if factor_data.level == 'high' %}
+                                {{ factor_data.high }}
+                            {% else %}
+                                {{ factor_data.low }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="career-recommendations">
+                            <div class="career-title">
+                                {% if lang == 'en' %}Suitable Careers{% else %}적합한 직업{% endif %}
+                            </div>
+                            <div class="career-list">
+                                {% if factor_data.level == 'high' %}
+                                    {% for career in factor_data.careers_high %}
+                                        <span class="career-pill">{{ career }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    {% for career in factor_data.careers_low %}
+                                        <span class="career-pill">{{ career }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Shared Result Notice -->
+        <div class="action-section">
+            <div class="action-header">
+                <h3 class="action-title">
+                    {% if lang == 'en' %}Want to Take Your Own Test?{% else %}나도 테스트 해보기{% endif %}
+                </h3>
+                <p class="action-subtitle">
+                    {% if lang == 'en' %}Discover your personality with our comprehensive Big5 assessment{% else %}종합적인 Big5 평가로 당신의 성격을 알아보세요{% endif %}
+                </p>
+            </div>
+            
+            <div class="action-buttons-grid">
+                <a href="{{ url_for('index', lang=lang) }}" class="action-btn action-btn-primary">
+                    <div class="action-btn-icon">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <div class="action-btn-content">
+                        <h6>{% if lang == 'en' %}Start Test{% else %}테스트 시작{% endif %}</h6>
+                        <small>{% if lang == 'en' %}Take your own personality assessment{% else %}나만의 성격 분석 시작하기{% endif %}</small>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('set_language', lang='en' if lang == 'ko' else 'ko') }}" class="action-btn action-btn-secondary">
+                    <div class="action-btn-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="action-btn-content">
+                        <h6>{% if lang == 'en' %}한국어{% else %}English{% endif %}</h6>
+                        <small>{% if lang == 'en' %}Switch to Korean{% else %}영어로 보기{% endif %}</small>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="save-notice">
+                <i class="fas fa-info-circle me-2"></i>
+                {% if lang == 'en' %}This is a shared personality test result. Take your own test for personalized insights.{% else %}이것은 공유된 성격 테스트 결과입니다. 개인 맞춤 분석을 위해 직접 테스트를 받아보세요.{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Personality Radar Chart for shared results
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('personalityChart').getContext('2d');
+    
+    // Create gradient for the chart
+    const gradient = ctx.createRadialGradient(200, 200, 0, 200, 200, 200);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.1)');
+    
+    const personalityChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: {% if lang == 'en' %}['Openness', 'Conscientiousness', 'Extraversion', 'Agreeableness', 'Neuroticism']{% else %}['개방성', '성실성', '외향성', '우호성', '신경성']{% endif %},
+            datasets: [{
+                label: '{% if lang == 'en' %}Personality Profile{% else %}성격 프로필{% endif %}',
+                data: [
+                    {{ scores.O }},
+                    {{ scores.C }},
+                    {{ scores.E }},
+                    {{ scores.A }},
+                    {{ scores.N }}
+                ],
+                backgroundColor: gradient,
+                borderColor: '#6366f1',
+                borderWidth: 3,
+                pointBackgroundColor: [
+                    '{{ insights.O.color }}',
+                    '{{ insights.C.color }}', 
+                    '{{ insights.E.color }}',
+                    '{{ insights.A.color }}',
+                    '{{ insights.N.color }}'
+                ],
+                pointBorderColor: '#fff',
+                pointBorderWidth: 3,
+                pointRadius: 8,
+                pointHoverRadius: 12
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20,
+                        color: '#64748b',
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: '#e2e8f0',
+                        lineWidth: 1
+                    },
+                    pointLabels: {
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        color: '#1e293b'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#6366f1',
+                    borderWidth: 1,
+                    cornerRadius: 8
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+
+    // Animate score circles
+    const scoreCircles = document.querySelectorAll('.score-circle-modern');
+    scoreCircles.forEach((circle, index) => {
+        const score = circle.dataset.score;
+        const fillCircle = circle.querySelector('.score-fill');
+        const circumference = 2 * Math.PI * 32; // radius = 32
+        const offset = circumference - (score / 100) * circumference;
+        
+        fillCircle.style.strokeDasharray = circumference;
+        fillCircle.style.strokeDashoffset = circumference;
+        
+        // Animate the circle
+        setTimeout(() => {
+            fillCircle.style.strokeDashoffset = offset;
+        }, 500 + (index * 200));
+    });
+
+    // Animate factor cards on scroll
+    const animateOnScroll = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.animation = 'slideInUp 0.6s ease-out forwards';
+                    entry.target.style.opacity = '1';
+                }, index * 100);
+            }
+        });
+    }, {
+        threshold: 0.2,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    // Observe elements for animation
+    document.querySelectorAll('.factor-result-card').forEach(card => {
+        card.style.opacity = '0';
+        animateOnScroll.observe(card);
+    });
+
+    document.querySelectorAll('.personality-overview-card, .action-section').forEach(element => {
+        element.style.opacity = '0';
+        animateOnScroll.observe(element);
+    });
+});
+</script>
+{% endblock %}
