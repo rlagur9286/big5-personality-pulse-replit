@@ -528,7 +528,7 @@ def index():
 def set_language(lang):
     if lang in ['ko', 'en']:
         session['language'] = lang
-    return redirect(url_for('index', lang=lang))
+    return redirect(f'/?lang={lang}')
 
 @app.route('/start_test')
 def start_test():
@@ -537,13 +537,13 @@ def start_test():
     session['current_question'] = 1
     session['test_started'] = datetime.now().isoformat()
     lang = session.get('language', 'ko')
-    return redirect(url_for('test', lang=lang))
+    return redirect(f'/test?lang={lang}')
 
 @app.route('/test', methods=['GET', 'POST'])
 @app.route('/test/<int:question_num>', methods=['GET', 'POST'])
 def test(question_num=None):
     if 'test_started' not in session:
-        return redirect(url_for('index'))
+        return redirect('/')
     
     lang = session.get('language', 'ko')
     questions = BIG5_QUESTIONS[lang]
@@ -553,7 +553,7 @@ def test(question_num=None):
         if 1 <= question_num <= len(questions):
             session['current_question'] = question_num
         else:
-            return redirect(url_for('test'))
+            return redirect('/test')
     
     current_q = session.get('current_question', 1)
     
@@ -569,17 +569,17 @@ def test(question_num=None):
         # Handle navigation
         if action == 'prev' and current_q > 1:
             session['current_question'] = current_q - 1
-            return redirect(url_for('test'))
+            return redirect('/test')
         elif action == 'next':
             if current_q < len(questions):
                 session['current_question'] = current_q + 1
-                return redirect(url_for('test'))
+                return redirect('/test')
             else:
                 # Test completed, calculate results
-                return redirect(url_for('calculate_results'))
+                return redirect('/calculate_results')
         elif action == 'finish':
             # Force finish test (go to results)
-            return redirect(url_for('calculate_results'))
+            return redirect('/calculate_results')
     
     # Get current question
     if current_q <= len(questions):
@@ -600,7 +600,7 @@ def test(question_num=None):
                              answered_count=answered_count,
                              lang=lang)
     else:
-        return redirect(url_for('calculate_results'))
+        return redirect('/calculate_results')
 
 @app.route('/calculate_results')
 def calculate_results():
@@ -609,7 +609,7 @@ def calculate_results():
     
     # Check if we have enough answers
     if 'answers' not in session or len(session['answers']) < len(questions):
-        return redirect(url_for('index'))
+        return redirect('/')
     
     # Calculate scores for each factor
     scores = {'O': 0, 'C': 0, 'E': 0, 'A': 0, 'N': 0}
@@ -642,12 +642,12 @@ def calculate_results():
     session['anime_character'] = anime_character
     session['test_completed'] = datetime.now().isoformat()
     
-    return redirect(url_for('results'))
+    return redirect('/results')
 
 @app.route('/results')
 def results():
     if 'results' not in session:
-        return redirect(url_for('index'))
+        return redirect('/')
     
     lang = session.get('language', 'ko')
     scores = session['results']
