@@ -646,45 +646,62 @@ def calculate_results():
 
 @app.route('/results')
 def results():
-    if 'results' not in session:
-        return redirect('/')
-    
-    lang = session.get('language', 'ko')
-    scores = session['results']
-    factor_descriptions = FACTOR_DESCRIPTIONS[lang]
-    anime_character = session.get('anime_character', None)
-    
-    # Define colors for each factor
-    factor_colors = {
-        'O': '#6366f1',  # Indigo for Openness
-        'C': '#10b981',  # Emerald for Conscientiousness  
-        'E': '#f59e0b',  # Amber for Extraversion
-        'A': '#ef4444',  # Red for Agreeableness
-        'N': '#8b5cf6'   # Violet for Neuroticism
-    }
-    
-    # Generate personality insights
-    insights = {}
-    for factor, score in scores.items():
-        factor_info = factor_descriptions[factor].copy()
-        factor_info['score'] = score
-        factor_info['level'] = 'high' if score >= 60 else 'low' if score <= 40 else 'medium'
-        factor_info['color'] = factor_colors[factor]
-        insights[factor] = factor_info
-    
-    # Current date for display
-    current_date = datetime.now().strftime('%Y년 %m월 %d일' if lang == 'ko' else '%B %d, %Y')
-    
-    # No sharing feature in database-free version
-    share_url = None
-    
-    return render_template('results.html', 
-                         insights=insights, 
-                         scores=scores,
-                         anime_character=anime_character,
-                         lang=lang,
-                         current_date=current_date,
-                         share_url=share_url)
+    try:
+        if 'results' not in session:
+            return redirect('/')
+        
+        lang = session.get('language', 'ko')
+        scores = session['results']
+        factor_descriptions = FACTOR_DESCRIPTIONS[lang]
+        anime_character = session.get('anime_character', None)
+        
+        # Define colors for each factor
+        factor_colors = {
+            'O': '#6366f1',  # Indigo for Openness
+            'C': '#10b981',  # Emerald for Conscientiousness  
+            'E': '#f59e0b',  # Amber for Extraversion
+            'A': '#ef4444',  # Red for Agreeableness
+            'N': '#8b5cf6'   # Violet for Neuroticism
+        }
+        
+        # Generate personality insights
+        insights = {}
+        for factor, score in scores.items():
+            factor_info = factor_descriptions[factor].copy()
+            factor_info['score'] = score
+            factor_info['level'] = 'high' if score >= 60 else 'low' if score <= 40 else 'medium'
+            factor_info['color'] = factor_colors[factor]
+            insights[factor] = factor_info
+        
+        # Current date for display
+        current_date = datetime.now().strftime('%Y년 %m월 %d일' if lang == 'ko' else '%B %d, %Y')
+        
+        # No sharing feature in database-free version
+        share_url = None
+        
+        return render_template('results.html', 
+                             insights=insights, 
+                             scores=scores,
+                             anime_character=anime_character,
+                             lang=lang,
+                             current_date=current_date,
+                             share_url=share_url)
+                             
+    except Exception as e:
+        app.logger.error(f'Error in results(): {str(e)}')
+        return f'''
+        <h1>Results Error Debug</h1>
+        <p><strong>Error:</strong> {str(e)}</p>
+        <p><strong>Error Type:</strong> {type(e).__name__}</p>
+        <p><strong>Session Data:</strong></p>
+        <ul>
+            <li>Has results: {'results' in session}</li>
+            <li>Has anime_character: {'anime_character' in session}</li>
+            <li>Language: {session.get('language', 'ko')}</li>
+            <li>Results keys: {list(session.get('results', {}).keys()) if 'results' in session else 'None'}</li>
+        </ul>
+        <p><a href="/">홈으로 돌아가기</a></p>
+        ''', 500
 
 # Error handlers for debugging
 @app.errorhandler(500)
