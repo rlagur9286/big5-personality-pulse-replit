@@ -719,5 +719,26 @@ def not_found_error(error):
 def health_check():
     return {'status': 'ok', 'message': 'Flask app is running'}, 200
 
+# SEO 파일들 제공
+@app.route('/robots.txt')
+def robots_txt():
+    from flask import Response
+    return Response(open('robots.txt').read(), mimetype='text/plain')
+
+@app.route('/sitemap.xml')
+def sitemap_xml():
+    from flask import Response
+    return Response(open('sitemap.xml').read(), mimetype='application/xml')
+
+@app.route('/rss.xml')
+def rss_xml():
+    from flask import Response
+    return Response(open('rss.xml').read(), mimetype='application/rss+xml')
+
+@app.route('/ads.txt')
+def ads_txt():
+    from flask import Response
+    return Response(open('ads.txt').read(), mimetype='text/plain')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
